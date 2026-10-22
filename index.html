@@ -66,18 +66,26 @@ footer{z-index:5;display:flex;align-items:center;justify-content:space-between;c
 @media(max-height:570px) and (orientation:landscape){
  #app{padding-top:10px;padding-bottom:10px}.stage{grid-template-columns:minmax(190px,350px) minmax(270px,440px);grid-template-rows:1fr;gap:34px}.carousel{height:calc(var(--vvh) - 90px)}.card{height:calc(var(--vvh) - 110px);min-height:280px}.details{text-align:left}.details h1{display:block;font-size:45px}.details h2{font-size:13px}.details p{display:block;font-size:13px;margin-bottom:14px}.actions{justify-content:flex-start}.dots{justify-content:flex-start;margin-top:12px}footer{display:none}
 }
-#gate{position:fixed;inset:0;z-index:100;display:grid;place-items:center;height:var(--vvh);padding:24px;
- background:radial-gradient(circle at 20% 15%,rgba(184,255,52,.14),transparent 35%),radial-gradient(circle at 85% 85%,rgba(81,227,255,.14),transparent 38%),#05070b;
- transition:opacity .45s ease,visibility .45s}
+/* ---------- password gate + disclaimer (share the same overlay styling) ---------- */
+.overlay{position:fixed;inset:0;z-index:100;display:grid;place-items:center;height:var(--vvh);padding:24px;transition:opacity .4s ease,visibility .4s}
+#gate{background:radial-gradient(circle at 20% 15%,rgba(184,255,52,.14),transparent 35%),radial-gradient(circle at 85% 85%,rgba(81,227,255,.14),transparent 38%),#05070b}
+#notice{z-index:99;background:rgba(3,5,9,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;visibility:hidden;pointer-events:none}
+#notice.show{opacity:1;visibility:visible;pointer-events:auto}
 #gate.open{opacity:0;visibility:hidden;pointer-events:none}
-.gate-card{width:min(360px,100%);text-align:center;padding:30px 26px 26px;border-radius:24px;background:rgba(17,23,34,.92);border:1px solid rgba(255,255,255,.1);box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.gate-card{width:min(360px,100%);text-align:center;padding:30px 26px 26px;border-radius:24px;background:rgba(17,23,34,.95);border:1px solid rgba(255,255,255,.1);box-shadow:0 30px 80px rgba(0,0,0,.6)}
+#notice .gate-card{transform:translateY(14px) scale(.96);transition:transform .4s cubic-bezier(.2,.8,.2,1)}
+#notice.show .gate-card{transform:none}
 .gate-card .brand-mark{margin:0 auto 18px;width:46px;height:46px;font-size:24px;border-radius:13px}
 .gate-card h1{margin:0 0 6px;font-size:22px;font-weight:900;letter-spacing:.18em}
 .gate-card p{margin:0 0 22px;color:var(--muted);font-size:14px}
+.notice-text{margin:4px 0 18px!important;color:#d7ddeb!important;font-size:15px!important;line-height:1.55}
+.notice-contact{display:block;margin:0 0 22px;padding:12px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);color:var(--muted);font-size:13px;-webkit-user-select:text;user-select:text}
+.notice-contact a{color:var(--accent);font-weight:800;text-decoration:none;word-break:break-all}
 #pw{width:100%;padding:15px 16px;border-radius:14px;border:2px solid rgba(255,255,255,.14);background:#0a0e16;color:#fff;font:600 16px system-ui;outline:none;text-align:center;letter-spacing:.12em;-webkit-user-select:text;user-select:text;touch-action:manipulation;transition:border-color .2s}
 #pw:focus{border-color:var(--accent)}
 #pw.bad{border-color:#ff536e}
 .gate-btn{margin-top:14px;width:100%;appearance:none;border:0;border-radius:14px;padding:15px;background:var(--accent);color:#080a0e;font:900 15px/1 system-ui;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;touch-action:manipulation}
+#noticeOk{margin-top:0}
 #gateErr{min-height:20px;margin-top:12px;color:#ff7d90;font-size:13px;font-weight:700}
 .shake{animation:shake .4s}
 @keyframes shake{20%,60%{transform:translateX(-9px)}40%,80%{transform:translateX(9px)}}
@@ -85,7 +93,7 @@ footer{z-index:5;display:flex;align-items:center;justify-content:space-between;c
 </style>
 </head>
 <body>
-<div id="gate">
+<div id="gate" class="overlay">
  <form class="gate-card" id="gateCard" autocomplete="off">
    <div class="brand-mark">&#9670;</div>
    <h1>GAME SHELF</h1>
@@ -94,6 +102,15 @@ footer{z-index:5;display:flex;align-items:center;justify-content:space-between;c
    <button class="gate-btn" type="submit">Enter</button>
    <div id="gateErr" role="alert"></div>
  </form>
+</div>
+<div id="notice" class="overlay" role="dialog" aria-modal="true" aria-labelledby="noticeTitle">
+ <div class="gate-card">
+   <div class="brand-mark">!</div>
+   <h1 id="noticeTitle">DISCLAIMER</h1>
+   <p class="notice-text">These are R&amp;D minigames by R.&nbsp;Sales, not for commercial use.</p>
+   <span class="notice-contact">Contact: <a href="mailto:ame.raniel@gmail.com">ame.raniel@gmail.com</a></span>
+   <button class="gate-btn" id="noticeOk" type="button">OK</button>
+ </div>
 </div>
 <div id="app">
  <header>
@@ -118,21 +135,27 @@ footer{z-index:5;display:flex;align-items:center;justify-content:space-between;c
  <footer>
    <div class="key-help"><span><b class="key">&larr;</b><b class="key">&rarr;</b>Browse</span><span><b class="key">Enter</b>Play</span></div>
    <div class="swipe-hint">Swipe to browse &middot; Tap poster to play</div>
-   <div class="deck-label">Local game library</div>
+   <div class="deck-label">R&amp;D minigames &middot; R. Sales</div>
  </footer>
 </div>
 <script>
-/* password gate: a light deterrent. Unlocking sets a session flag that each game checks. */
-const PASS_HASH='38aee03b',PASS_KEY='gameShelfPass';
+/* password gate: a light deterrent. Unlocking sets a session flag that each game checks.
+   After unlocking, a disclaimer is shown once per session. */
+const PASS_HASH='38aee03b',PASS_KEY='gameShelfPass',NOTICE_KEY='gameShelfNotice';
 function fnv(s){let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}return h.toString(16).padStart(8,'0');}
 let locked=true;
 const gate=document.getElementById('gate'),pw=document.getElementById('pw'),gateCard=document.getElementById('gateCard'),gateErr=document.getElementById('gateErr');
-function unlock(){locked=false;gate.classList.add('open');pw.blur();}
-try{if(sessionStorage.getItem(PASS_KEY)==='1')unlock();}catch(e){}
-if(locked)setTimeout(()=>pw.focus(),300);
+const notice=document.getElementById('notice'),noticeOk=document.getElementById('noticeOk');
+const ss={get:k=>{try{return sessionStorage.getItem(k);}catch(e){return null;}},set:(k,v)=>{try{sessionStorage.setItem(k,v);}catch(e){}}};
+function showNotice(){locked=true;notice.classList.add('show');setTimeout(()=>noticeOk.focus(),350);}
+function unlock(){gate.classList.add('open');pw.blur();if(ss.get(NOTICE_KEY)!=='1')showNotice();else locked=false;}
+noticeOk.addEventListener('click',()=>{ss.set(NOTICE_KEY,'1');notice.classList.remove('show');locked=false;});
+notice.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key==='Escape'){e.preventDefault();noticeOk.click();}});
+if(ss.get(PASS_KEY)==='1')unlock();
+if(!gate.classList.contains('open'))setTimeout(()=>pw.focus(),300);
 gateCard.addEventListener('submit',e=>{
   e.preventDefault();
-  if(fnv(pw.value.trim())===PASS_HASH){try{sessionStorage.setItem(PASS_KEY,'1');}catch(_){}unlock();}
+  if(fnv(pw.value.trim())===PASS_HASH){ss.set(PASS_KEY,'1');unlock();}
   else{gateErr.textContent='Wrong password';pw.classList.add('bad');gateCard.classList.remove('shake');void gateCard.offsetWidth;gateCard.classList.add('shake');pw.select();
     if(navigator.vibrate)try{navigator.vibrate(60);}catch(_){}}
 });
@@ -151,7 +174,7 @@ function build(){
    card.addEventListener('click',()=>{if(swiped||locked)return;if(i===index)play();else select(i);});
    card.addEventListener('keydown',e=>{if(e.key==='Enter'&&!locked){if(i===index)play();else select(i);}});
    carousel.appendChild(card);
-   const d=document.createElement('button');d.className='dot';d.setAttribute('aria-label','Select '+g.title+' '+g.edition);d.onclick=()=>select(i);dots.appendChild(d);
+   const d=document.createElement('button');d.className='dot';d.setAttribute('aria-label','Select '+g.title+' '+g.edition);d.onclick=()=>{if(!locked)select(i);};dots.appendChild(d);
  });
  document.getElementById('count').textContent=GAMES.length;
 }
