@@ -326,7 +326,7 @@ cv.addEventListener('pointerdown',e=>{
     if(x>=r.x&&x<=r.x+r.w&&y>=r.y&&y<=r.y+r.h){
       try{cv.setPointerCapture(e.pointerId);}catch(_){}
       const s=SH[sl.shape],touch=e.pointerType!=='mouse';
-      drag={si:i,pid:e.pointerId,x,y,touch,t0:T,fromX:r.cx,fromY:r.cy,fromS:trayScale(s),valid:false,gx:0,gy:0,lines:{rows:[],cols:[]}};
+      drag={si:i,pid:e.pointerId,x,y,sx:x,sy:y,touch,t0:T,fromX:r.cx,fromY:r.cy,fromS:trayScale(s),valid:false,gx:0,gy:0,lines:{rows:[],cols:[]}};
       sl.ret=null;sfx('pick');buzz(5);updateDrag();return;
     }
   }
@@ -343,10 +343,14 @@ addEventListener('contextmenu',e=>e.preventDefault());
 document.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
 document.addEventListener('gesturestart',e=>e.preventDefault());
 // piece is held above the finger on touch so you can see where it lands
+const DRAG_GAIN_X=1.25;   // horizontal: piece moves 1.25x your finger
+const DRAG_GAIN_Y=1.6;    // vertical: piece moves 1.6x your finger
 function dragPos(d){
   const s=SH[slots[d.si].shape],c=L.cell,wpx=s.w*c,hpx=s.h*c;
   const lift=d.touch?c*1.25+hpx/2:0;
-  const cx=d.x,cy=d.y-lift;
+  // the piece travels further than your finger (like Block Blast), so a short thumb move reaches the top rows
+  const gx=d.touch?DRAG_GAIN_X:1,gy=d.touch?DRAG_GAIN_Y:1;
+  const cx=d.sx+(d.x-d.sx)*gx,cy=d.sy-lift+(d.y-d.sy)*gy;
   return{cx,cy,left:cx-wpx/2,top:cy-hpx/2,overBoard:cx>L.bx-c&&cx<L.bx+L.board+c&&cy>L.by-c&&cy<L.by+L.board+c};
 }
 function updateDrag(){
